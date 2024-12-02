@@ -1,46 +1,52 @@
-// Set up the SVG canvas dimensions
-const svg = d3.select("svg"),
-      width = +svg.attr("width"),
-      height = +svg.attr("height");
+// Sample data
+const data = [
+    { category: 'A', value: 30 },
+    { category: 'B', value: 80 },
+    { category: 'C', value: 45 },
+    { category: 'D', value: 60 },
+    { category: 'E', value: 20 },
+    { category: 'F', value: 90 },
+    { category: 'G', value: 50 }
+];
 
-// Read the CSV file located in the 'Data' folder
-d3.csv("data/IEA-EV-dataEV charging pointsHistoricalEV.csv").then(function(data) {
-    // Convert the 'value' column to a number for proper scaling
-    data.forEach(d => {
-        d.value = +d.value;
-        d.year = +d.year;
-    });
+// Set dimensions
+const width = 800;
+const height = 400;
+const margin = { top: 20, right: 30, bottom: 40, left: 40 };
 
-    // Set up the x and y scales
-    const x = d3.scaleBand()
-                .domain(data.map(d => d.year))
-                .range([0, width])
-                .padding(0.1);
+// Create SVG
+const svg = d3.select('#chart')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
 
-    const y = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d.value)])
-                .nice()
-                .range([height, 0]);
+// X and Y scales
+const x = d3.scaleBand()
+    .domain(data.map(d => d.category))
+    .range([margin.left, width - margin.right])
+    .padding(0.1);
 
-    // Append bars for each year
-    svg.selectAll(".bar")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", d => x(d.year))
-        .attr("y", d => y(d.value))
-        .attr("width", x.bandwidth())
-        .attr("height", d => height - y(d.value));
+const y = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.value)])
+    .nice()
+    .range([height - margin.bottom, margin.top]);
 
-    // Append x-axis
-    svg.append("g")
-       .attr("class", "x axis")
-       .attr("transform", "translate(0," + height + ")")
-       .call(d3.axisBottom(x));
+// Add bars
+svg.selectAll('.bar')
+    .data(data)
+    .enter().append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.category))
+    .attr('y', d => y(d.value))
+    .attr('height', d => y(0) - y(d.value))
+    .attr('width', x.bandwidth());
 
-    // Append y-axis
-    svg.append("g")
-       .attr("class", "y axis")
-       .call(d3.axisLeft(y));
-});
+// X axis
+svg.append('g')
+    .attr('transform', `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x));
 
+// Y axis
+svg.append('g')
+    .attr('transform', `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y));
