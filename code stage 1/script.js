@@ -1,52 +1,35 @@
 // Sample data
-const data = [
-    { category: 'A', value: 30 },
-    { category: 'B', value: 80 },
-    { category: 'C', value: 45 },
-    { category: 'D', value: 60 },
-    { category: 'E', value: 20 },
-    { category: 'F', value: 90 },
-    { category: 'G', value: 50 }
-];
+const data = [10, 20, 30, 40, 50];
 
-// Set dimensions
-const width = 800;
-const height = 400;
-const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+// Set dimensions for the chart
+const width = 500;
+const height = 300;
+const barWidth = width / data.length;
 
-// Create SVG
+// Create an SVG container
 const svg = d3.select('#chart')
     .append('svg')
     .attr('width', width)
     .attr('height', height);
 
-// X and Y scales
-const x = d3.scaleBand()
-    .domain(data.map(d => d.category))
-    .range([margin.left, width - margin.right])
-    .padding(0.1);
-
-const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.value)])
-    .nice()
-    .range([height - margin.bottom, margin.top]);
-
-// Add bars
-svg.selectAll('.bar')
+// Create bars for the bar chart
+svg.selectAll('rect')
     .data(data)
-    .enter().append('rect')
-    .attr('class', 'bar')
-    .attr('x', d => x(d.category))
-    .attr('y', d => y(d.value))
-    .attr('height', d => y(0) - y(d.value))
-    .attr('width', x.bandwidth());
+    .enter()
+    .append('rect')
+    .attr('x', (d, i) => i * barWidth)
+    .attr('y', d => height - d * 5)
+    .attr('width', barWidth - 10)
+    .attr('height', d => d * 5)
+    .attr('fill', 'steelblue');
 
-// X axis
-svg.append('g')
-    .attr('transform', `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x));
-
-// Y axis
-svg.append('g')
-    .attr('transform', `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y));
+// Add labels to each bar
+svg.selectAll('text')
+    .data(data)
+    .enter()
+    .append('text')
+    .attr('x', (d, i) => i * barWidth + barWidth / 2 - 5)
+    .attr('y', d => height - d * 5 - 5)
+    .text(d => d)
+    .attr('fill', 'black')
+    .attr('font-size', '12px');
